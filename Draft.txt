@@ -1,0 +1,13 @@
+5 items to appear in your upper navbar:
+Home
+Posts 
+Categories (Dropdown): Public Health; Finance
+Tags
+Publications
+About me
+
+Models: 
+Silvia Canelón (https://silvia.rbind.io/)
+Allison Horst (https://www.allisonhorst.com/)
+Julia Silge (https://juliasilge.com/)
+

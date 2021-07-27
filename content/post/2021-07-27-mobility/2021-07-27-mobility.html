@@ -1,0 +1,244 @@
+---
+title: How to collect information about mobility, by countries
+author: Sidney Bissoli
+date: '2021-07-27'
+slug: mobility
+categories: []
+tags:
+  - Mobility
+  - Apple
+  - Publich Health
+  - Covid-19
+subtitle: ''
+summary: ''
+authors: []
+lastmod: '2021-07-27T11:43:26-03:00'
+featured: no
+image:
+  caption: ''
+  focal_point: ''
+  preview_only: no
+projects: []
+---
+
+<script src="/rmarkdown-libs/header-attrs/header-attrs.js"></script>
+
+
+<p>In this post I show how to get and present data about mobility from Apple smartphones. The credit goes to the blog <a href="https://blog.ephorie.de/covid-19-analyze-mobility-trends-with-r"><strong>Learning Machines</strong></a>, from which I’ve learnt what I share with you now.</p>
+<p>Dataset is on the Apple website <a href="https://covid19.apple.com/mobility"><strong>Motion Trend Reports</strong></a>. Just click on <strong>All CSV Data</strong>, download file and save it in the working directory that you will use.</p>
+<p>Time series starts on January 13, 2020. It presents data from 152 countries, and three types of mobility: driving; transit (public transport); and walking. Data reflects requests for directions on Apple Maps. Apple remembers that Maps does not associate data with users’ Apple ID, and does not keep a history of where they were.</p>
+<hr />
+<p>First, let’s get and inspect data (don’t forget to set your R working directory where you have salved the file!):</p>
+<pre class="r"><code># read data
+mobility &lt;- read.csv(&quot;./applemobilitytrends-2021-07-22.csv&quot;)
+
+# inspect data
+str(mobility, list.len=10)</code></pre>
+<pre><code>## &#39;data.frame&#39;:    4691 obs. of  563 variables:
+##  $ geo_type           : chr  &quot;country/region&quot; &quot;country/region&quot; &quot;country/region&quot; &quot;country/region&quot; ...
+##  $ region             : chr  &quot;Albania&quot; &quot;Albania&quot; &quot;Argentina&quot; &quot;Argentina&quot; ...
+##  $ transportation_type: chr  &quot;driving&quot; &quot;walking&quot; &quot;driving&quot; &quot;walking&quot; ...
+##  $ alternative_name   : chr  &quot;&quot; &quot;&quot; &quot;&quot; &quot;&quot; ...
+##  $ sub.region         : chr  &quot;&quot; &quot;&quot; &quot;&quot; &quot;&quot; ...
+##  $ country            : chr  &quot;&quot; &quot;&quot; &quot;&quot; &quot;&quot; ...
+##  $ X2020.01.13        : num  100 100 100 100 100 100 100 100 100 100 ...
+##  $ X2020.01.14        : num  95.3 100.7 97.1 95.1 103 ...
+##  $ X2020.01.15        : num  101.4 98.9 102.5 101.4 104.2 ...
+##  $ X2020.01.16        : num  97.2 98.5 111.2 112.7 108.6 ...
+##   [list output truncated]</code></pre>
+<p>It’s a dataset of 4.691 observations and 456 variables. Almost all variables refer to dates. The first 6 variables are comprised of data about countries and mobility type.</p>
+<p>Note that value in day 1 (January 13, 2020) is equal to 100 for all locations; subsequent days should be understood as upward or downward variations in mobility in relation to this initial date.</p>
+<p>Let’s build a graph with 3 types of locomotion (driving, public transport, and walking) in United States. Plots will have a line that smoothes out sudden daily variations (“addsmooth” function).</p>
+<pre class="r"><code># graph &quot;driving&quot;
+us_driving &lt;- function(reg = &quot;United States&quot;, 
+                       trans = &quot;driving&quot;, 
+                       plot = TRUE, 
+                       addsmooth = TRUE) {
+  data &lt;- subset(
+    mobility,
+    region == reg &amp; transportation_type == trans)[4:ncol(mobility)]
+  dates &lt;- as.Date(
+    sapply(
+      names(data), 
+      function(x) substr(x, start = 2, stop = 11)
+      ), 
+    &quot;%Y.%m.%d&quot;
+    )
+  values &lt;- as.numeric(data)
+  series &lt;- setNames(values, dates)
+  if (plot) {
+    plot(dates, values, main = &quot;US - driving&quot;, xlab = &quot;&quot;, 
+         ylab = &quot;&quot;, type = &quot;l&quot;, col = &quot;blue&quot;, lwd = 3, cex.main = 1.5)
+    if (addsmooth) {
+      lines(dates, values, col = &quot;lightblue&quot;, lwd = 3)
+      lines(supsmu(dates, values), col = &quot;blue&quot;, lwd = 2)
+    }
+    abline(h = 100)
+    abline(h = c(0, 20, 40, 60, 80, 120, 140, 160, 180, 200), lty = 3)
+    invisible(series)
+  } else series
+}
+
+# graph &quot;transit&quot;
+us_transit &lt;- function(reg = &quot;United States&quot;, 
+                       trans = &quot;transit&quot;, 
+                       plot = TRUE, 
+                       addsmooth = TRUE) {
+  data &lt;- subset(
+    mobility, 
+    region == reg &amp; transportation_type == trans)[4:ncol(mobility)]
+  dates &lt;- as.Date(
+    sapply(
+      names(data), 
+      function(x) substr(x, start = 2, stop = 11)
+      ), 
+    &quot;%Y.%m.%d&quot;
+    )
+  values &lt;- as.numeric(data)
+  series &lt;- setNames(values, dates)
+  if (plot) {
+    plot(dates, values, main = &quot;US - public transport&quot;, xlab = &quot;&quot;, 
+         ylab = &quot;&quot;, type = &quot;l&quot;, col = &quot;blue&quot;, lwd = 3, cex.main = 1.5)
+    if (addsmooth) {
+      lines(dates, values, col = &quot;lightblue&quot;, lwd = 3)
+      lines(supsmu(dates, values), col = &quot;blue&quot;, lwd = 2)
+    }
+    abline(h = 100)
+    abline(h = c(0, 20, 40, 60, 80, 120, 140, 160, 180, 200), lty = 3)
+    invisible(series)
+  } else series
+}
+
+# graph &quot;walking&quot;
+us_walking &lt;- function(reg = &quot;United States&quot;, 
+                       trans = &quot;walking&quot;, 
+                       plot = TRUE, 
+                       addsmooth = TRUE) {
+  data &lt;- subset(
+    mobility, 
+    region == reg &amp; transportation_type == trans)[4:ncol(mobility)]
+  dates &lt;- as.Date(
+    sapply(
+      names(data), 
+      function(x) substr(x, start = 2, stop = 11)
+      ), 
+    &quot;%Y.%m.%d&quot;
+    )
+  values &lt;- as.numeric(data)
+  series &lt;- setNames(values, dates)
+  if (plot) {
+    plot(dates, values, main = &quot;US - walking&quot;, xlab = &quot;&quot;, 
+         ylab = &quot;&quot;, type = &quot;l&quot;, col = &quot;blue&quot;, lwd = 3, cex.main = 1.5)
+    if (addsmooth) {
+      lines(dates, values, col = &quot;lightblue&quot;, lwd = 3)
+      lines(supsmu(dates, values), col = &quot;blue&quot;, lwd = 2)
+    }
+    abline(h = 100)
+    abline(h = c(0, 20, 40, 60, 80, 120, 140, 160, 180, 200), lty = 3)
+    invisible(series)
+  } else series
+}
+
+# print graphs
+par(mfrow = c(1,3))
+us_driving()
+us_transit()
+us_walking()</code></pre>
+<p><img src="/post/2021-07-27-mobility/2021-07-27-mobility_files/figure-html/graph%20US-1.png" width="960" /></p>
+<p>United States are far above mobility level before pandemic, specially considering driving and walking types. Now we will select only driving, and compare United States with other countries (India, Brasil and Indonesia).</p>
+<pre class="r"><code># India - driving
+india_driving &lt;- function(reg = &quot;India&quot;, 
+                          trans = &quot;driving&quot;, 
+                          plot = TRUE, 
+                          addsmooth = TRUE) {
+  data &lt;- subset(
+    mobility, 
+    region == reg &amp; transportation_type == trans)[4:ncol(mobility)]
+  dates &lt;- as.Date(
+    sapply(
+      names(data), 
+      function(x) substr(x, start = 2, stop = 11)
+      ), 
+    &quot;%Y.%m.%d&quot;
+    )
+  values &lt;- as.numeric(data)
+  series &lt;- setNames(values, dates)
+  if (plot) {
+    plot(dates, values, main = &quot;India - driving&quot;, xlab = &quot;&quot;, 
+         ylab = &quot;&quot;, type = &quot;l&quot;, col = &quot;blue&quot;, lwd = 3, cex.main = 1.5)
+    if (addsmooth) {
+      lines(dates, values, col = &quot;lightblue&quot;, lwd = 3)
+      lines(supsmu(dates, values), col = &quot;blue&quot;, lwd = 2)
+    }
+    abline(h = 100)
+    abline(h = c(0, 20, 40, 60, 80, 120, 140, 160, 180, 200), lty = 3)
+    invisible(series)
+  } else series
+}
+
+# Brazil - driving
+brazil_driving &lt;- function(reg = &quot;Brazil&quot;, 
+                           trans = &quot;driving&quot;, 
+                           plot = TRUE, 
+                           addsmooth = TRUE) {
+  data &lt;- subset(
+    mobility, region == reg &amp; transportation_type == trans)[4:ncol(mobility)]
+  dates &lt;- as.Date(
+    sapply(
+      names(data), 
+      function(x) substr(x, start = 2, stop = 11)
+      ), 
+    &quot;%Y.%m.%d&quot;
+    )
+  values &lt;- as.numeric(data)
+  series &lt;- setNames(values, dates)
+  if (plot) {
+    plot(dates, values, main = &quot;Brazil - driving&quot;, xlab = &quot;&quot;, 
+         ylab = &quot;&quot;, type = &quot;l&quot;, col = &quot;blue&quot;, lwd = 3, cex.main = 1.5)
+    if (addsmooth) {
+      lines(dates, values, col = &quot;lightblue&quot;, lwd = 3)
+      lines(supsmu(dates, values), col = &quot;blue&quot;, lwd = 2)
+    }
+    abline(h = 100)
+    abline(h = c(0, 20, 40, 60, 80, 120, 140, 160, 180, 200), lty = 3)
+    invisible(series)
+  } else series
+}
+
+# Indonesia - driving
+indonesia_driving &lt;- function(reg = &quot;Indonesia&quot;, 
+                              trans = &quot;driving&quot;, 
+                              plot = TRUE, 
+                              addsmooth = TRUE) {
+  data &lt;- subset(
+    mobility, 
+    region == reg &amp; transportation_type == trans)[4:ncol(mobility)]
+  dates &lt;- as.Date(
+    sapply(names(data), 
+           function(x) substr(x, start = 2, stop = 11)
+           ), 
+    &quot;%Y.%m.%d&quot;
+    )
+  values &lt;- as.numeric(data)
+  series &lt;- setNames(values, dates)
+  if (plot) {
+    plot(dates, values, main = &quot;Indonesia - driving&quot;, xlab = &quot;&quot;, 
+         ylab = &quot;&quot;, type = &quot;l&quot;, col = &quot;blue&quot;, lwd = 3, cex.main = 1.5)
+    if (addsmooth) {
+      lines(dates, values, col = &quot;lightblue&quot;, lwd = 3)
+      lines(supsmu(dates, values), col = &quot;blue&quot;, lwd = 2)
+    }
+    abline(h = 100)
+    abline(h = c(0, 20, 40, 60, 80, 120, 140, 160, 180, 200), lty = 3)
+    invisible(series)
+  } else series
+}
+
+# plot all countries
+par(mfrow = c(2,2))
+us_driving()
+india_driving()
+brazil_driving()
+indonesia_driving()</code></pre>
+<p><img src="/post/2021-07-27-mobility/2021-07-27-mobility_files/figure-html/comparison-1.png" width="768" /></p>
+<p>As you can see, Indonesia (like other Asian countries) is facing more mobility restrictions, due to the high number of Covid-19 infections.</p>
