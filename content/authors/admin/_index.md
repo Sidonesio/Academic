@@ -17,9 +17,11 @@ education:
 email: "sbissoli76@gmail.com"
 highlight_name: false
 interests:
+- Data Science
+- Financial Market
 - Psychology
 - Public Health
-- Financial Market
+- R
 organizations:
 - name: Senado Federal
   url: https://https://www12.senado.leg.br/hpsenado
