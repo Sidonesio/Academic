@@ -5,7 +5,7 @@
 
 # Appearance
 
-theme: minimal
+theme: coffee
 day_night: true
 font: ''
 font_size: L
@@ -20,28 +20,26 @@ twitter: ''
 
 # Contact (edit or remove options as required)
 
-email: test@example.org
-phone: 888 888 88 88
+email: sbissoli76@gmail.com
+phone: +55 (61) 99675-5444
 address:
-  street: 450 Serra Mall
-  city: Stanford
-  region: CA
-  postcode: '94305'
-  country: United States
-  country_code: US
+  street: SQS 102 Bloco A ap. 302
+  city: Brasília
+  region: DF
+  postcode: '70330-010'
+  country: Brazil
+  country_code: BR
 coordinates:
-  latitude: '37.4275'
-  longitude: '-122.1697'
-directions: Enter Building 1 and take the stairs to Office 200 on Floor 2
+  latitude: '-15.803126898738551'
+  longitude: '-47.890713214874275'
+directions:
 office_hours:
-  - 'Monday 10:00 to 13:00'
-  - 'Wednesday 09:00 to 10:00'
-appointment_url: 'https://calendly.com'
+appointment_url: ''
 contact_links:
   - icon: twitter
     icon_pack: fab
     name: DM Me
-    link: 'https://twitter.com/Twitter'
+    link: 'https://twitter.com/sbissoli76'
   - icon: skype
     icon_pack: fab
     name: Skype Me

@@ -34,4 +34,5 @@ usethis::use_github()
 # check file gitignore
 blogdown::check_gitignore()
 
-
+# reopen site
+servr::browse_last()

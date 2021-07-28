@@ -12,7 +12,7 @@ headless: true
 # Order that this section appears on the page.
 weight: 65
 
-title: Because we R what we share
+title: We R what we share
 subtitle: ''
 
 content:
