@@ -1,0 +1,206 @@
+---
+title: Using linear regression to help on relative pricing of brazilian banks
+author: Sidney Bissoli
+date: '2021-07-29'
+slug: linear-regression-banks
+categories:
+  - R
+  - Finance
+tags:
+  - R
+  - Finance
+  - Linear Regression
+subtitle: ''
+summary: ''
+authors: []
+lastmod: '2021-07-29T17:17:50-03:00'
+featured: no
+image:
+  caption: ''
+  focal_point: ''
+  preview_only: no
+projects: []
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, message = FALSE, warning = FALSE)
+```
+
+In this post, I will show how to use linear regression to help on relative pricing. It is important to say that I am not dealing with absolute or intrinsic
+valuation (e.g.: discounted cash flow - DCF). For the difference between pricing and valuation, see [Damodaran](https://www.youtube.com/watch?v=DeChWXTg7Og). The response variable chosen was P/B (price over book ratio), and the predictors were: 
+
+1) Return On Equity (ROE)
+2) Negotiated volume in the last 2 months
+3) Net Revenues' Growth in the last 5 years
+4) Equity (thousand "reais")
+5) If the Government is the controlling shareholder or not
+6) If the company is a fintech or not
+
+Data were collected from the website [Fundamentus](http://www.fundamentus.com.br/). Predictor 5 was obtained from Google. Predictor 6 was the only variable that I have built by my own, from my knowledge of Brazilian banking sector. Banks were chosen because, in this sector, P/B ratio reflects more appropriately the companies' value. Brazilian banks were chosen just because I am from Brazil. So, first, let's load data and packages that we are going to use:
+```{r load, message = FALSE}
+# packages needed
+library(readxl)
+library(GGally)
+library(caret)
+library(gridExtra)
+library(tidyverse)
+library(ggrepel)
+library(sandwich)
+library(jtools)
+
+# read data
+df <- read_excel("./data.xlsx", 
+                 col_types = c(
+                   "text","text","numeric","numeric",
+                   "numeric","numeric","numeric","numeric","numeric"))
+```
+
+Let's inspect data:
+```{r structure}
+# view data structure
+str(df)
+```
+
+"State_owned" and "Fintech" must be classified as factor variables:
+```{r factor}
+# set variables as factors
+df$state_owned <- as.factor(df$state_owned)
+df$fintech <- as.factor(df$fintech)
+```
+
+Let's visualize variables' distribution, and how they are related to each other:
+
+```{r ggpairs, fig.dim = c(10,8)}
+# visual inspection
+ggpairs(df[,3:9])
+```
+
+First, as we can see, "price_book" is a very skewed variable; we will run a log transformation to normalize it as much as we can, without losing model's interpretability.
+
+```{r log transformation}
+df$price_book_log <- log(df$price_book)
+```
+
+Second, "equity_thousand" and "volume" mean almost the same thing (correlation = 0.876). We will use function "findCorrelation", from caret package, to remove one of them (for details about how "findCorrelation" works, see [The caret Package](http://topepo.github.io/caret/pre-processing.html#identifying-correlated-predictors)). First, we will build a matrix correlations with the numeric variables:
+
+```{r matrix correlation}
+# correlation matrix with numeric variables
+cor_matrix <-  cor(df[,c(4:7,10)]) 
+```
+
+Then, we will apply "findCorrelation" function and get variable's name that will be removed:
+
+```{r remove high correlation}
+# find correlations > .85
+high_cor <- findCorrelation(cor_matrix, cutoff = .85) 
+colnames(cor_matrix)[high_cor]
+```
+
+"Volume" is the variable that "findCorrelation" indicates removal. So, we will model without it:
+
+```{r fit model}
+# fit a linear model
+lm <- lm(price_book_log ~ . -ticker -name -volume -price_book, data = df)
+summ(lm, confint = TRUE)
+```
+
+There is too much to say about this table:
+
+1) Model as a whole is statistically significant (p < 0.05)
+2) 73% of Log(Price/Book)'s variability is explained by those predictors
+3) Predictors that are also statistically significant are: ROE; if the Government is the controlling shareholder or not; if the company is a fintech or not
+4) Example of model's interpretation: 0.09 is the expected change in Log(Price/Book Value) per 1% change in ROE, holding all the other regressors fixed.
+
+Continuing, we are going to add more variables to our data frame: predicted values and confidence intervals (after exponentiation);  fitted values (before exponentiation); ratios (and absolute ratios) between predicted and observed outcomes; and, finally, if stock is under or overpriced.
+
+```{r add variables}
+# predict interval
+pred_int <- exp(predict(lm, interval = "prediction")) %>% 
+  data.frame()
+
+# add some variables to the data frame
+df <- df %>%
+  mutate(residuals = lm$residuals,
+         fitted_log = lm$fitted.values,
+         fitted = pred_int$fit,
+         lower = pred_int$lwr,
+         upper = pred_int$upr,
+         distance = (fitted / price_book) - 1,
+         distance_abs = abs(distance),
+         classification = ifelse(distance > 0, "underpriced", "overpriced"))
+```
+
+In this post, I am not going to use all techniques to evaluate if linear regression model's assumptions are met; instead, let's just check if residuals are normally distributed:
+
+```{r residuals, fig.dim = c(10,8)}
+# inspect residuals
+ggplot(data = df, aes(x = residuals)) + 
+  geom_histogram(bins = 6,
+                   aes(y = ..density..), colour="black", fill="white") + 
+  geom_density(alpha=.2, fill="#FF6666") + 
+  labs(x = "Residuals",
+       y = "Density",
+       title = "Residuals' Distribution")
+```
+
+Not so normal, but also not so bad. Let's continue, observing the relationship between predicted and observed values:
+
+```{r predicted versus observed, fig.dim = c(10,8)}
+# inspect relation between observed versus predicted values
+g_loess <- ggplot(data = df, aes(x = price_book_log, y = fitted_log)) + 
+  stat_summary(fun.data=mean_cl_normal) + 
+  geom_smooth() + 
+  labs(x = "Log(Price/Book Value)",
+       y = "Fitted Values",
+       title = "Local Polynomial Regression Line") + 
+  theme(plot.title = element_text(hjust = 0.5))
+
+g_linear <- ggplot(data = df, aes(x = price_book_log, y = fitted_log)) + 
+  stat_summary(fun.data=mean_cl_normal) + 
+  geom_smooth(method='lm', formula= y~x) + 
+  labs(x = "Log(Price/Book Value)",
+       y = "Fitted Values",
+       title = "Linear Regression Line") + 
+  theme(plot.title = element_text(hjust = 0.5))
+
+grid.arrange(g_loess, g_linear, ncol=2)
+```
+
+Plots on the left and the right show LOESS and linear regression lines, respectively. We can see that the association between our outcome and predictors are not exactly linear, but the linear model does the job sufficiently well.
+
+Let's view the same plot, coloring what stocks may be under or overpriced, in relative terms, and sizing how far they are from what would be expected.
+
+```{r pricing plot, fig.dim = c(10,8)}
+# view under and overpriced stocks
+ggplot(data = df, aes(x = price_book_log, y = fitted_log)) +
+  geom_point(aes(color = classification, size = distance_abs)) + 
+  geom_text_repel(aes(label = ticker), color = "black", size = 5) + 
+  scale_color_manual(values=c("red","green3"),
+                     labels=c("Overpriced","Underpriced")) + 
+  labs(x = "Observed Log(Price/Book Value)",
+       y = "Predicted Log(Price/Book Value)",
+       size="Distance Observed x Fitted", colour= element_blank()) + 
+  theme(legend.position = "bottom",
+        legend.title = element_text(size=15),
+        legend.text = element_text(size=15),
+        axis.title=element_text(size=15))
+```
+
+
+
+
+
+Finally, we will order stocks, from the most underpriced to the most overpriced.
+
+```{r order}
+# arrange data frame
+df %>%
+  select(ticker, name, price_book, fitted, distance, classification) %>%
+  arrange(desc(distance)) %>%
+  mutate_if(is.numeric, round, 2) %>%
+  data.frame()
+```
+
+Disclaimer: the study above is not a recommendation to buy or sell stocks. It has just educational purposes. It does not indicate that stocks are cheap or expensive, because it is not about valuation, but just pricing. It just shows which stocks are above or beyond what would be expected, when we compare them within each other. In other words, when we price something, we need to consider that all stocks can be cheap (or expensive).
+
+

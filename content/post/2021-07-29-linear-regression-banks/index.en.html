@@ -1,0 +1,205 @@
+---
+title: Using linear regression to help on relative pricing of brazilian banks
+author: Sidney Bissoli
+date: '2021-07-29'
+slug: linear-regression-banks
+categories:
+  - R
+  - Finance
+tags:
+  - R
+  - Finance
+  - Linear Regression
+subtitle: ''
+summary: ''
+authors: []
+lastmod: '2021-07-29T17:17:50-03:00'
+featured: no
+image:
+  caption: ''
+  focal_point: ''
+  preview_only: no
+projects: []
+---
+
+<script src="{{< blogdown/postref >}}index.en_files/header-attrs/header-attrs.js"></script>
+
+
+<p>In this post, I will show how to use linear regression to help on relative pricing. It is important to say that I am not dealing with absolute or intrinsic
+valuation (e.g.: discounted cash flow - DCF). For the difference between pricing and valuation, see <a href="https://www.youtube.com/watch?v=DeChWXTg7Og">Damodaran</a>. The response variable chosen was P/B (price over book ratio), and the predictors were:</p>
+<ol style="list-style-type: decimal">
+<li>Return On Equity (ROE)</li>
+<li>Negotiated volume in the last 2 months</li>
+<li>Net Revenues’ Growth in the last 5 years</li>
+<li>Equity (thousand “reais”)</li>
+<li>If the Government is the controlling shareholder or not</li>
+<li>If the company is a fintech or not</li>
+</ol>
+<p>Data were collected from the website <a href="http://www.fundamentus.com.br/">Fundamentus</a>. Predictor 5 was obtained from Google. Predictor 6 was the only variable that I have built by my own, from my knowledge of Brazilian banking sector. Banks were chosen because, in this sector, P/B ratio reflects more appropriately the companies’ value. Brazilian banks were chosen just because I am from Brazil. So, first, let’s load data and packages that we are going to use:</p>
+<pre class="r"><code># packages needed
+library(readxl)
+library(GGally)
+library(caret)
+library(gridExtra)
+library(tidyverse)
+library(ggrepel)
+library(sandwich)
+library(jtools)
+
+# read data
+df &lt;- read_excel(&quot;./data.xlsx&quot;, 
+                 col_types = c(
+                   &quot;text&quot;,&quot;text&quot;,&quot;numeric&quot;,&quot;numeric&quot;,
+                   &quot;numeric&quot;,&quot;numeric&quot;,&quot;numeric&quot;,&quot;numeric&quot;,&quot;numeric&quot;))</code></pre>
+<p>Let’s inspect data:</p>
+<pre class="r"><code># view data structure
+str(df)</code></pre>
+<pre><code>## tibble [19 x 9] (S3: tbl_df/tbl/data.frame)
+##  $ ticker            : chr [1:19] &quot;ABCB4&quot; &quot;BAZA3&quot; &quot;BBAS3&quot; &quot;BBDC4&quot; ...
+##  $ name              : chr [1:19] &quot;ABC BRASIL&quot; &quot;AMAZONIA&quot; &quot;BRASIL&quot; &quot;BRADESCO&quot; ...
+##  $ price_book        : num [1:19] 0.79 0.47 0.74 1.68 0.93 ...
+##  $ roe_pct           : num [1:19] 8.3 13.6 10.6 13.4 11.9 12.1 0.5 1.7 16.3 16 ...
+##  $ volume            : num [1:19] 1.22e+07 5.54e+04 3.94e+08 9.46e+08 2.36e+05 ...
+##  $ revenue_growth_pct: num [1:19] -16.3 -9.7 -4.4 -1.4 5.8 9.2 30.9 -23.9 18.9 -1.2 ...
+##  $ equity_thousand   : num [1:19] 4.39e+06 2.49e+06 1.28e+08 1.44e+08 1.76e+06 ...
+##  $ state_owned       : num [1:19] 0 1 1 0 1 1 0 0 1 0 ...
+##  $ fintech           : num [1:19] 0 0 0 0 0 0 1 0 0 0 ...</code></pre>
+<p>“State_owned” and “Fintech” must be classified as factor variables:</p>
+<pre class="r"><code># set variables as factors
+df$state_owned &lt;- as.factor(df$state_owned)
+df$fintech &lt;- as.factor(df$fintech)</code></pre>
+<p>Let’s visualize variables’ distribution, and how they are related to each other:</p>
+<pre class="r"><code># visual inspection
+ggpairs(df[,3:9])</code></pre>
+<p><img src="{{< blogdown/postref >}}index.en_files/figure-html/ggpairs-1.png" width="960" /></p>
+<p>First, as we can see, “price_book” is a very skewed variable; we will run a log transformation to normalize it as much as we can, without losing model’s interpretability.</p>
+<pre class="r"><code>df$price_book_log &lt;- log(df$price_book)</code></pre>
+<p>Second, “equity_thousand” and “volume” mean almost the same thing (correlation = 0.876). We will use function “findCorrelation”, from caret package, to remove one of them (for details about how “findCorrelation” works, see <a href="http://topepo.github.io/caret/pre-processing.html#identifying-correlated-predictors">The caret Package</a>). First, we will build a matrix correlations with the numeric variables:</p>
+<pre class="r"><code># correlation matrix with numeric variables
+cor_matrix &lt;-  cor(df[,c(4:7,10)]) </code></pre>
+<p>Then, we will apply “findCorrelation” function and get variable’s name that will be removed:</p>
+<pre class="r"><code># find correlations &gt; .85
+high_cor &lt;- findCorrelation(cor_matrix, cutoff = .85) 
+colnames(cor_matrix)[high_cor]</code></pre>
+<pre><code>## [1] &quot;volume&quot;</code></pre>
+<p>“Volume” is the variable that “findCorrelation” indicates removal. So, we will model without it:</p>
+<pre class="r"><code># fit a linear model
+lm &lt;- lm(price_book_log ~ . -ticker -name -volume -price_book, data = df)
+summ(lm, confint = TRUE)</code></pre>
+<pre><code>## MODEL INFO:
+## Observations: 19
+## Dependent Variable: price_book_log
+## Type: OLS linear regression 
+## 
+## MODEL FIT:
+## F(5,13) = 10.91, p = 0.00
+## R² = 0.81
+## Adj. R² = 0.73 
+## 
+## Standard errors: OLS
+## ----------------------------------------------------------------
+##                             Est.    2.5%   97.5%   t val.      p
+## ------------------------ ------- ------- ------- -------- ------
+## (Intercept)                -0.50   -1.00    0.01    -2.14   0.05
+## roe_pct                     0.09    0.05    0.14     4.50   0.00
+## revenue_growth_pct          0.00   -0.01    0.02     0.60   0.56
+## equity_thousand            -0.00   -0.00    0.00    -0.52   0.61
+## state_owned1               -0.84   -1.45   -0.23    -2.98   0.01
+## fintech1                    3.33    2.01    4.65     5.45   0.00
+## ----------------------------------------------------------------</code></pre>
+<p>There is too much to say about this table:</p>
+<ol style="list-style-type: decimal">
+<li>Model as a whole is statistically significant (p &lt; 0.05)</li>
+<li>73% of Log(Price/Book)’s variability is explained by those predictors</li>
+<li>Predictors that are also statistically significant are: ROE; if the Government is the controlling shareholder or not; if the company is a fintech or not</li>
+<li>Example of model’s interpretation: 0.09 is the expected change in Log(Price/Book Value) per 1% change in ROE, holding all the other regressors fixed.</li>
+</ol>
+<p>Continuing, we are going to add more variables to our data frame: predicted values and confidence intervals (after exponentiation); fitted values (before exponentiation); ratios (and absolute ratios) between predicted and observed outcomes; and, finally, if stock is under or overpriced.</p>
+<pre class="r"><code># predict interval
+pred_int &lt;- exp(predict(lm, interval = &quot;prediction&quot;)) %&gt;% 
+  data.frame()
+
+# add some variables to the data frame
+df &lt;- df %&gt;%
+  mutate(residuals = lm$residuals,
+         fitted_log = lm$fitted.values,
+         fitted = pred_int$fit,
+         lower = pred_int$lwr,
+         upper = pred_int$upr,
+         distance = (fitted / price_book) - 1,
+         distance_abs = abs(distance),
+         classification = ifelse(distance &gt; 0, &quot;underpriced&quot;, &quot;overpriced&quot;))</code></pre>
+<p>In this post, I am not going to use all techniques to evaluate if linear regression model’s assumptions are met; instead, let’s just check if residuals are normally distributed:</p>
+<pre class="r"><code># inspect residuals
+ggplot(data = df, aes(x = residuals)) + 
+  geom_histogram(bins = 6,
+                   aes(y = ..density..), colour=&quot;black&quot;, fill=&quot;white&quot;) + 
+  geom_density(alpha=.2, fill=&quot;#FF6666&quot;) + 
+  labs(x = &quot;Residuals&quot;,
+       y = &quot;Density&quot;,
+       title = &quot;Residuals&#39; Distribution&quot;)</code></pre>
+<p><img src="{{< blogdown/postref >}}index.en_files/figure-html/residuals-1.png" width="960" /></p>
+<p>Not so normal, but also not so bad. Let’s continue, observing the relationship between predicted and observed values:</p>
+<pre class="r"><code># inspect relation between observed versus predicted values
+g_loess &lt;- ggplot(data = df, aes(x = price_book_log, y = fitted_log)) + 
+  stat_summary(fun.data=mean_cl_normal) + 
+  geom_smooth() + 
+  labs(x = &quot;Log(Price/Book Value)&quot;,
+       y = &quot;Fitted Values&quot;,
+       title = &quot;Local Polynomial Regression Line&quot;) + 
+  theme(plot.title = element_text(hjust = 0.5))
+
+g_linear &lt;- ggplot(data = df, aes(x = price_book_log, y = fitted_log)) + 
+  stat_summary(fun.data=mean_cl_normal) + 
+  geom_smooth(method=&#39;lm&#39;, formula= y~x) + 
+  labs(x = &quot;Log(Price/Book Value)&quot;,
+       y = &quot;Fitted Values&quot;,
+       title = &quot;Linear Regression Line&quot;) + 
+  theme(plot.title = element_text(hjust = 0.5))
+
+grid.arrange(g_loess, g_linear, ncol=2)</code></pre>
+<p><img src="{{< blogdown/postref >}}index.en_files/figure-html/predicted%20versus%20observed-1.png" width="960" /></p>
+<p>Plots on the left and the right show LOESS and linear regression lines, respectively. We can see that the association between our outcome and predictors are not exactly linear, but the linear model does the job sufficiently well.</p>
+<p>Let’s view the same plot, coloring what stocks may be under or overpriced, in relative terms, and sizing how far they are from what would be expected.</p>
+<pre class="r"><code># view under and overpriced stocks
+ggplot(data = df, aes(x = price_book_log, y = fitted_log)) +
+  geom_point(aes(color = classification, size = distance_abs)) + 
+  geom_text_repel(aes(label = ticker), color = &quot;black&quot;, size = 5) + 
+  scale_color_manual(values=c(&quot;red&quot;,&quot;green3&quot;),
+                     labels=c(&quot;Overpriced&quot;,&quot;Underpriced&quot;)) + 
+  labs(x = &quot;Observed Log(Price/Book Value)&quot;,
+       y = &quot;Predicted Log(Price/Book Value)&quot;,
+       size=&quot;Distance Observed x Fitted&quot;, colour= element_blank()) + 
+  theme(legend.position = &quot;bottom&quot;,
+        legend.title = element_text(size=15),
+        legend.text = element_text(size=15),
+        axis.title=element_text(size=15))</code></pre>
+<p><img src="{{< blogdown/postref >}}index.en_files/figure-html/pricing%20plot-1.png" width="960" /></p>
+<p>Finally, we will order stocks, from the most underpriced to the most overpriced.</p>
+<pre class="r"><code># arrange data frame
+df %&gt;%
+  select(ticker, name, price_book, fitted, distance, classification) %&gt;%
+  arrange(desc(distance)) %&gt;%
+  mutate_if(is.numeric, round, 2) %&gt;%
+  data.frame()</code></pre>
+<pre><code>##    ticker         name price_book fitted distance classification
+## 1   BRIV4  ALFA INVEST       0.51   1.12     1.20    underpriced
+## 2   BAZA3     AMAZONIA       0.47   0.87     0.85    underpriced
+## 3  SANB11 SANTANDER BR       1.97   3.27     0.66    underpriced
+## 4   ABCB4   ABC BRASIL       0.79   1.20     0.52    underpriced
+## 5   BNBR3  NORD BRASIL       0.91   1.26     0.39    underpriced
+## 6   ITSA4       ITAUSA       1.66   2.11     0.27    underpriced
+## 7   BGIP4       BANESE       0.69   0.83     0.20    underpriced
+## 8   RPAD3 ALFA HOLDING       0.61   0.66     0.08    underpriced
+## 9   BRSR6     BANRISUL       0.59   0.60     0.02    underpriced
+## 10  BBDC4     BRADESCO       1.68   1.69     0.00    underpriced
+## 11 BIDI11  BANCO INTER      20.35  20.35     0.00    underpriced
+## 12  ITUB4 ITAUUNIBANCO       2.15   2.04    -0.05     overpriced
+## 13  BEES3     BANESTES       0.93   0.80    -0.14     overpriced
+## 14  BMIN4  MERC INVEST       0.81   0.64    -0.21     overpriced
+## 15  BBAS3       BRASIL       0.74   0.57    -0.23     overpriced
+## 16  PINE4         PINE       0.48   0.32    -0.33     overpriced
+## 17 BPAC11   BTGP BANCO       3.90   2.52    -0.35     overpriced
+## 18  BSLI4    BRB BANCO       4.39   2.12    -0.52     overpriced
+## 19  BPAN4    BANCO PAN       4.91   2.00    -0.59     overpriced</code></pre>
+<p>Disclaimer: the study above is not a recommendation to buy or sell stocks. It has just educational purposes. It does not indicate that stocks are cheap or expensive, because it is not about valuation, but just pricing. It just shows which stocks are above or beyond what would be expected, when we compare them within each other. In other words, when we price something, we need to consider that all stocks can be cheap (or expensive).</p>
