@@ -1,0 +1,81 @@
+---
+title: Using linear regression to help on relative pricing of brazilian banks
+author: Sidney Bissoli
+date: '2021-07-29'
+slug: linear-regression-banks
+categories:
+  - R
+  - Finance
+tags:
+  - R
+  - Finance
+  - Linear Regression
+subtitle: ''
+summary: ''
+authors: []
+lastmod: '2021-07-29T16:24:56-03:00'
+featured: no
+image:
+  caption: ''
+  focal_point: ''
+  preview_only: no
+projects: []
+---
+
+In this post, I will show how to use linear regression to help on relative pricing. It is important to say that I am not dealing with absolute or intrinsic
+valuation (e.g.: discounted cash flow - DCF). For the difference between pricing and valuation, see [Damodaran](https://www.youtube.com/watch?v=DeChWXTg7Og). The response variable chosen was P/B (price over book ratio), and the predictors were: 
+
+1) Return On Equity (ROE)
+2) Negotiated volume in the last 2 months
+3) Net Revenues' Growth in the last 5 years
+4) Equity (thousand reais)
+5) If the Government is the controlling shareholder or not
+6) If the companhy is a fintech or not
+
+Data were collected from the website [Fundamentus](http://www.fundamentus.com.br/). Predictor 5 was obtained from Google. Predictor 6 was the only variable that I have built by own, from my knowledge of Brazilian banking sector. Banks were chosen because, in this sector, P/B ratio reflects more appropriately the companies' value. Brazilian banks were chosen just because I am from Brazil. So, first, let's load data and packages that we are going to use:
+```{r load}
+# packages needed
+library(readxl)
+library(GGally)
+library(caret)
+library(gridExtra)
+library(tidyverse)
+library(ggrepel)
+library(sandwich)
+library(jtools)
+
+# read data
+df <- read_excel("./data.xlsx", 
+                 col_types = c(
+                   "text","text","numeric","numeric",
+                   "numeric","numeric","numeric","numeric","numeric"))
+```
+
+Let's inspect data:
+```{r structure}
+# view data structure
+str(df)
+```
+
+"State_owned" and "Fintech" must be classified as factor variables:
+```{r factor}
+df$state_owned <- as.factor(df$state_owned)
+df$fintech <- as.factor(df$fintech)
+```
+
+Let's visualize variables' distribution, and how they are related to each other:
+
+```{r ggpairs, fig.dim = c(10,8)}
+# visual inspection
+ggpairs(df[,3:9])
+```
+
+As we can see, "price_book" is too much skewed; we will run a log transformation, to normalize it as much as we can, without losing model's interpretability.
+
+```{r}
+df$price_book_log <- log(df$price_book)
+```
+
+Moreover, 
+
+
