@@ -51,10 +51,13 @@ g <- ggscatter(data = merge, x = "itsa_price", y = "itub_price",
                add.params = list(color = "blue", fill = "lightgray"), 
                conf.int = TRUE)
 g + 
-  stat_cor(method = "pearson", label.x = 3, label.y = 30) + 
+  stat_cor(method = "pearson", label.x = 3, label.y = 30, size = 20) + 
   labs(x = "ITSA4",
        y = "ITUB4",
-       title = "Scatterplot ITSA4 versus ITUB4")
+       title = "Scatterplot ITSA4 versus ITUB4") + 
+  theme(axis.text=element_text(size=20),
+        axis.title=element_text(size=20),
+        plot.title = element_text(size=20))
 ```
 
 As you can see, correlatin is equal to 0.99, which means that ITUB4 and ITSA4 mean almost the same thing. As a holding, ITSA4 is traded at a discount in relation to the sum of its investees' market capitalization. But, how much is the "fair" discount, and can we buy ITSA4 simply to get ITUB4 at lower prices? These are the questions that this post intends to answer.
@@ -82,9 +85,9 @@ ggplot(data = df, aes(x = date, y = discount)) +
   labs(x = "Date",
        y = "Discount",
        title = "Holding's discount in relation to shares held in investee companies") + 
-  theme(axis.text=element_text(size=15),
-        axis.title=element_text(size=15),
-        plot.title = element_text(size=15))
+  theme(axis.text=element_text(size=20),
+        axis.title=element_text(size=20),
+        plot.title = element_text(size=20))
 ```
 
 Dashed horizontal lines represent the mean (at the center), mean plus 1 standard deviation (at the top), and mean minus 1 standard deviation (at the bottom). In other words, in most part of the time, this discount ranges between something like 18% and 25%. Another way of visualizing the same information is plotting an histogram:
@@ -100,9 +103,9 @@ ggplot(data = df, aes(x = discount)) +
        title = "Discount's Distribution") + 
   geom_vline(xintercept = mean(df$discount), 
              linetype = "dashed", size = 1, color = "red") + 
-  theme(axis.text=element_text(size=15),
-        axis.title=element_text(size=15),
-        plot.title = element_text(size=15))
+  theme(axis.text=element_text(size=20),
+        axis.title=element_text(size=20),
+        plot.title = element_text(size=20))
 ```
 
 Red dashed vertical line represents the mean. Distribution is rigth-skewed, which means that in some occasions the discount was too high (more than 30%). Numerically, let's view the summary stats:
@@ -152,9 +155,9 @@ ggplot(data = data,
        title = "Returns comparison's boxplot") + 
   theme(legend.position = "none") + 
   scale_fill_manual(values = c("red3","green4")) + 
-  theme(axis.text=element_text(size=15),
-        axis.title=element_text(size=15),
-        plot.title = element_text(size=15))
+  theme(axis.text=element_text(size=20),
+        axis.title=element_text(size=20),
+        plot.title = element_text(size=20))
 ```
 
 A density distribution:
@@ -169,10 +172,10 @@ ggplot(data = data, aes(x = discount, fill = factor(success))) +
        title = "Returns comparison's distribution") + 
   theme(legend.position = "bottom",
         legend.title = element_blank(),
-        legend.text = element_text(size=15),
-        axis.text=element_text(size=15),
-        axis.title=element_text(size=15),
-        plot.title = element_text(size=15)) + 
+        legend.text = element_text(size=20),
+        axis.text=element_text(size=20),
+        axis.title=element_text(size=20),
+        plot.title = element_text(size=20)) + 
   scale_fill_manual(labels = c("ITSA4 <= ITUB4", "ITSA4 > ITUB4"),
                     values = c("red","green3"))
 ```
@@ -193,10 +196,10 @@ data %>%
        y = "Count",
        title = "Returns comparison's distribution") + 
   theme(legend.position = "none",
-        axis.text=element_text(size=15),
-        axis.title=element_text(size=15),
-        plot.title = element_text(size=15),
-        strip.text = element_text(size = 15)) + 
+        axis.text=element_text(size=20),
+        axis.title=element_text(size=20),
+        plot.title = element_text(size=20),
+        strip.text = element_text(size = 20)) + 
   scale_fill_manual(values=c("red", "green3"))
 ```
 
@@ -239,10 +242,10 @@ data %>%
         panel.grid.minor.x=element_blank(),
         panel.grid.major.y=element_line(linetype="dashed", color="black"),
         axis.text.x=element_blank(),
-        axis.text.y=element_text(size = 15),
+        axis.text.y=element_text(size = 20),
         axis.ticks.x=element_blank(),
-        axis.title=element_text(size=15),
-        plot.title = element_text(size=15)) + 
+        axis.title=element_text(size=20),
+        plot.title = element_text(size=20)) + 
   labs(x = "Probability",
        y = "Discount",
        title = "Probability of ITSA4 > ITUB4 Returns") + 
@@ -265,10 +268,10 @@ ggplot(data = data, aes(x = date,
   scale_y_continuous(labels = percent_format(accuracy = 1)) + 
   theme(legend.position = "bottom",
         legend.title = element_blank(),
-        legend.text = element_text(size=15),
-        axis.text=element_text(size=15),
-        axis.title=element_text(size=15),
-        plot.title = element_text(size=15)) +
+        legend.text = element_text(size=20),
+        axis.text=element_text(size=20),
+        axis.title=element_text(size=20),
+        plot.title = element_text(size=20)) +
   scale_color_manual(values=c("red", "green3"), 
                      labels=c("ITSA4 <= ITUB4", "ITSA4 > ITUB4"))
 ```
