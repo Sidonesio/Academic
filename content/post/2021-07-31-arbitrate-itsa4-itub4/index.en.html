@@ -223,7 +223,7 @@ data %&gt;%
   group_by(discount_cat) %&gt;%
   summarise(prob = sum(success) / length(success)) %&gt;%
   ggplot(aes(x = prob, y = discount_cat)) + 
-  geom_point(size = 3, color=&quot;blue&quot;) + 
+  geom_point(size = 5, color=&quot;blue&quot;) + 
   scale_y_discrete(limits = rev(levels(data$discount_cat))) + 
   theme(panel.grid.major.x=element_blank(),
         panel.grid.minor.x=element_blank(),
@@ -236,7 +236,7 @@ data %&gt;%
   labs(x = &quot;Probability&quot;,
        y = &quot;Discount&quot;,
        title = &quot;Probability of ITSA4 &gt; ITUB4 Returns&quot;) + 
-  geom_text(aes(label = percent(prob)), hjust = -.1, vjust = -1) + 
+  geom_text(aes(label = percent(prob)), hjust = -.1, vjust = -1, size=7) + 
   xlim(c(.5,1))</code></pre>
 <p><img src="{{< blogdown/postref >}}index.en_files/figure-html/success%20probability-1.png" width="960" /></p>
 <p>As expected, the higher the discount, the higher the probability of ITSA4 returns exceed ITUB4 returns. But, again, paradoxically, there is a drop on success probability in the maximum range of discount (24.8% to 30.4%). We could suspect that success depends on other factors than discount - for instance, when the observations were obtained (or, in other words, the passage of time). We can check this coloring time series’ discount, by success or failure:</p>

@@ -236,7 +236,7 @@ data %>%
   group_by(discount_cat) %>%
   summarise(prob = sum(success) / length(success)) %>%
   ggplot(aes(x = prob, y = discount_cat)) + 
-  geom_point(size = 3, color="blue") + 
+  geom_point(size = 5, color="blue") + 
   scale_y_discrete(limits = rev(levels(data$discount_cat))) + 
   theme(panel.grid.major.x=element_blank(),
         panel.grid.minor.x=element_blank(),
@@ -249,7 +249,7 @@ data %>%
   labs(x = "Probability",
        y = "Discount",
        title = "Probability of ITSA4 > ITUB4 Returns") + 
-  geom_text(aes(label = percent(prob)), hjust = -.1, vjust = -1) + 
+  geom_text(aes(label = percent(prob)), hjust = -.1, vjust = -1, size=7) + 
   xlim(c(.5,1))
 ```
 
