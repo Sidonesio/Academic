@@ -51,7 +51,7 @@ g <- ggscatter(data = merge, x = "itsa_price", y = "itub_price",
                add.params = list(color = "blue", fill = "lightgray"), 
                conf.int = TRUE)
 g + 
-  stat_cor(method = "pearson", label.x = 3, label.y = 30, size = 20) + 
+  stat_cor(method = "pearson", label.x = 3, label.y = 30, size = 10) + 
   labs(x = "ITSA4",
        y = "ITUB4",
        title = "Scatterplot ITSA4 versus ITUB4") + 
