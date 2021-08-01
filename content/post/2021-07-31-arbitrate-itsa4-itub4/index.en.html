@@ -53,7 +53,7 @@ g +
        y = &quot;ITUB4&quot;,
        title = &quot;Scatterplot ITSA4 versus ITUB4&quot;)</code></pre>
 <p><img src="{{< blogdown/postref >}}index.en_files/figure-html/correlation-1.png" width="960" /></p>
-<p>As you can see, correlatin is equal to 0.99, which means that ITUB4 and ITSA4 means almost the same thing. As a holding, ITSA4 is traded at a discount in relation to the sum of its investees’ market capitalization. But, how much is the “fair” discount and, can we buy ITSA4 simply to get ITUB4 at lower prices? These are the questions that this post intends to answer.</p>
+<p>As you can see, correlatin is equal to 0.99, which means that ITUB4 and ITSA4 mean almost the same thing. As a holding, ITSA4 is traded at a discount in relation to the sum of its investees’ market capitalization. But, how much is the “fair” discount, and can we buy ITSA4 simply to get ITUB4 at lower prices? These are the questions that this post intends to answer.</p>
 <p>Fortunatelly, Itaúsa calculates this discount for us, in a monthly basis (click <a href="https://www.itausa.com.br/ListAtivos.aspx?idCanal=Afrgtrc88Ma15TQHbkasoQ==&amp;linguagem=pt&amp;ano=2021">here</a> to get the data). If you don’t want to or don’t know how to get your hands dirty, I have already done the job, which you can see on the plot below:</p>
 <pre class="r"><code># load packages
 library(readxl)
@@ -74,11 +74,10 @@ ggplot(data = df, aes(x = date, y = discount)) +
   scale_y_continuous(labels = percent_format(accuracy = 1)) + 
   labs(x = &quot;Date&quot;,
        y = &quot;Discount&quot;,
-       title = &quot;Holding&#39;s discount in relation to shares held 
-       in investee companies&quot;) + 
-  theme(axis.text=element_text(size=12),
-        axis.title=element_text(size=12),
-        plot.title = element_text(size=12))</code></pre>
+       title = &quot;Holding&#39;s discount in relation to shares held in investee companies&quot;) + 
+  theme(axis.text=element_text(size=15),
+        axis.title=element_text(size=15),
+        plot.title = element_text(size=15))</code></pre>
 <p><img src="{{< blogdown/postref >}}index.en_files/figure-html/plot%20discount%20time%20series-1.png" width="960" /></p>
 <p>Dashed horizontal lines represent the mean (at the center), mean plus 1 standard deviation (at the top), and mean minus 1 standard deviation (at the bottom). In other words, in most part of the time, this discount ranges between something like 18% and 25%. Another way of visualizing the same information is plotting an histogram:</p>
 <pre class="r"><code># plot distribution
@@ -91,11 +90,11 @@ ggplot(data = df, aes(x = discount)) +
        title = &quot;Discount&#39;s Distribution&quot;) + 
   geom_vline(xintercept = mean(df$discount), 
              linetype = &quot;dashed&quot;, size = 1, color = &quot;red&quot;) + 
-  theme(axis.text=element_text(size=12),
-        axis.title=element_text(size=12),
-        plot.title = element_text(size=12))</code></pre>
+  theme(axis.text=element_text(size=15),
+        axis.title=element_text(size=15),
+        plot.title = element_text(size=15))</code></pre>
 <p><img src="{{< blogdown/postref >}}index.en_files/figure-html/discount%20histogram-1.png" width="960" /></p>
-<p>Dashed red vertical line represents the mean. Distribution is rigth-skewed, which means that in some occasions the discount was too high (more than 30%). Numerically, let’s view the summary stats:</p>
+<p>Red dashed vertical line represents the mean. Distribution is rigth-skewed, which means that in some occasions the discount was too high (more than 30%). Numerically, let’s view the summary stats:</p>
 <pre class="r"><code># summary statistics
 summary(df$discount)</code></pre>
 <pre><code>##    Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
@@ -131,7 +130,7 @@ head(data, n = 10)</code></pre>
 ## 8  2006-07-31   2.453617   6.984033   0.2768    3.552463    3.338467       1
 ## 9  2006-08-31   2.500275   6.769938   0.2512    3.467509    3.475669       0
 ## 10 2006-09-29   2.483807   6.831853   0.2681    3.497129    3.435107       1</code></pre>
-<p>There are many ways of visualizing if there are difference on discounts in both situations. Through a boxplot:</p>
+<p>There are many ways of visualizing if there are difference on discounts on both situations. Through a boxplot:</p>
 <pre class="r"><code># box plot of difference on returns
 ggplot(data = data, 
        aes(x = factor(success), 
@@ -145,9 +144,9 @@ ggplot(data = data,
        title = &quot;Returns comparison&#39;s boxplot&quot;) + 
   theme(legend.position = &quot;none&quot;) + 
   scale_fill_manual(values = c(&quot;red3&quot;,&quot;green4&quot;)) + 
-  theme(axis.text=element_text(size=12),
-        axis.title=element_text(size=12),
-        plot.title = element_text(size=12))</code></pre>
+  theme(axis.text=element_text(size=15),
+        axis.title=element_text(size=15),
+        plot.title = element_text(size=15))</code></pre>
 <p><img src="{{< blogdown/postref >}}index.en_files/figure-html/sucess%20failure%20boxplot-1.png" width="960" /></p>
 <p>A density distribution:</p>
 <pre class="r"><code># density of difference on returns                           
@@ -158,7 +157,11 @@ ggplot(data = data, aes(x = discount, fill = factor(success))) +
        y = &quot;Density&quot;,
        title = &quot;Returns comparison&#39;s distribution&quot;) + 
   theme(legend.position = &quot;bottom&quot;,
-        legend.title = element_blank()) + 
+        legend.title = element_blank(),
+        legend.text = element_text(size=15),
+        axis.text=element_text(size=15),
+        axis.title=element_text(size=15),
+        plot.title = element_text(size=15)) + 
   scale_fill_manual(labels = c(&quot;ITSA4 &lt;= ITUB4&quot;, &quot;ITSA4 &gt; ITUB4&quot;),
                     values = c(&quot;red&quot;,&quot;green3&quot;))</code></pre>
 <p><img src="{{< blogdown/postref >}}index.en_files/figure-html/success%20failure%20density-1.png" width="960" /></p>
@@ -175,7 +178,11 @@ data %&gt;%
   labs(x = &quot;Discount&quot;,
        y = &quot;Count&quot;,
        title = &quot;Returns comparison&#39;s distribution&quot;) + 
-  theme(legend.position = &quot;none&quot;) + 
+  theme(legend.position = &quot;none&quot;,
+        axis.text=element_text(size=15),
+        axis.title=element_text(size=15),
+        plot.title = element_text(size=15),
+        strip.text = element_text(size = 15)) + 
   scale_fill_manual(values=c(&quot;red&quot;, &quot;green3&quot;))</code></pre>
 <p><img src="{{< blogdown/postref >}}index.en_files/figure-html/success%20failure%20histogram-1.png" width="960" /></p>
 <p>On the three plots, we conclude that ITSA4 returns were higher than ITUB4 returns when ITSA4 was traded at a higher discount in relation to the sum of its investees’ market capitalization (which is pretty intuitive). About the third plot, green bars are much higher just because it is more frequent that ITSA4 gets a better return than ITUB4.</p>
@@ -188,28 +195,26 @@ data %&gt;%
             median = median(discount),
             mean = mean(discount),
             third_quantile = quantile(discount, .75),
-            maximum = max(discount))</code></pre>
-<pre><code>## # A tibble: 2 x 7
-##   success minimum first_quantile median  mean third_quantile maximum
-##     &lt;dbl&gt;   &lt;dbl&gt;          &lt;dbl&gt;  &lt;dbl&gt; &lt;dbl&gt;          &lt;dbl&gt;   &lt;dbl&gt;
-## 1       0   0.159          0.176  0.186 0.202          0.227   0.304
-## 2       1   0.166          0.197  0.218 0.219          0.237   0.282</code></pre>
+            maximum = max(discount)) %&gt;%
+  data.frame()</code></pre>
+<pre><code>##   success minimum first_quantile  median      mean third_quantile maximum
+## 1       0  0.1593       0.176325 0.18645 0.2017333        0.22675  0.3040
+## 2       1  0.1664       0.197100 0.21800 0.2187566        0.23720  0.2825</code></pre>
 <p>Paradoxically, the higher discount occured when ITUB4 return was higher than ITSA4 return, but this is just an exception that proves the rule. Now we will categorizy the variable discount, so that in each categorization there is at least 30 observations. After that, we will calculate the probability of success (ITSA4 &gt; ITUB4 returns) in each categorization:</p>
 <pre class="r"><code># probability of success by discount (numerically)
 library(Hmisc)
 data$discount_cat &lt;- cut2(data$discount, m = 30)
 data %&gt;%
   group_by(discount_cat) %&gt;%
-  summarise(prob = sum(success) / length(success))</code></pre>
-<pre><code>## # A tibble: 6 x 2
-##   discount_cat   prob
-##   &lt;fct&gt;         &lt;dbl&gt;
-## 1 [0.159,0.181) 0.5  
-## 2 [0.181,0.201) 0.758
-## 3 [0.201,0.213) 0.828
-## 4 [0.213,0.229) 0.839
-## 5 [0.229,0.248) 0.903
-## 6 [0.248,0.304] 0.839</code></pre>
+  summarise(prob = sum(success) / length(success)) %&gt;%
+  data.frame()</code></pre>
+<pre><code>##    discount_cat      prob
+## 1 [0.159,0.181) 0.5000000
+## 2 [0.181,0.201) 0.7575758
+## 3 [0.201,0.213) 0.8275862
+## 4 [0.213,0.229) 0.8387097
+## 5 [0.229,0.248) 0.9032258
+## 6 [0.248,0.304] 0.8387097</code></pre>
 <pre class="r"><code># view success probability by categorical discount
 data %&gt;%
   group_by(discount_cat) %&gt;%
@@ -221,17 +226,17 @@ data %&gt;%
         panel.grid.minor.x=element_blank(),
         panel.grid.major.y=element_line(linetype=&quot;dashed&quot;, color=&quot;black&quot;),
         axis.text.x=element_blank(),
-        axis.text.y=element_text(size = 12),
+        axis.text.y=element_text(size = 15),
         axis.ticks.x=element_blank(),
-        axis.title=element_text(size=12),
-        plot.title = element_text(size=12)) + 
+        axis.title=element_text(size=15),
+        plot.title = element_text(size=15)) + 
   labs(x = &quot;Probability&quot;,
        y = &quot;Discount&quot;,
        title = &quot;Probability of ITSA4 &gt; ITUB4 Returns&quot;) + 
   geom_text(aes(label = percent(prob)), hjust = -.1, vjust = -1) + 
   xlim(c(.5,1))</code></pre>
 <p><img src="{{< blogdown/postref >}}index.en_files/figure-html/success%20probability-1.png" width="960" /></p>
-<p>As expected, the higher the discount, the higher the probability of ITSA4 returns exceed ITUB4 returns. But, again, paradoxically, there is a drop on success probability in the maximum range of discount (24.8% to 30.4%). We can suspect that success depends on other factors than discount - for instance, when the observations were obtained (or, in other words, the passage of time). We can check this coloring time series’ discount, by success or failure:</p>
+<p>As expected, the higher the discount, the higher the probability of ITSA4 returns exceed ITUB4 returns. But, again, paradoxically, there is a drop on success probability in the maximum range of discount (24.8% to 30.4%). We could suspect that success depends on other factors than discount - for instance, when the observations were obtained (or, in other words, the passage of time). We can check this coloring time series’ discount, by success or failure:</p>
 <pre class="r"><code># plot time series
 ggplot(data = data, aes(x = date, 
                         y = discount, 
@@ -244,12 +249,13 @@ ggplot(data = data, aes(x = date,
   scale_y_continuous(labels = percent_format(accuracy = 1)) + 
   theme(legend.position = &quot;bottom&quot;,
         legend.title = element_blank(),
-        legend.text = element_text(size=12),
-        axis.text=element_text(size=12),
-        axis.title=element_text(size=12),
-        plot.title = element_text(size=12)) +
+        legend.text = element_text(size=15),
+        axis.text=element_text(size=15),
+        axis.title=element_text(size=15),
+        plot.title = element_text(size=15)) +
   scale_color_manual(values=c(&quot;red&quot;, &quot;green3&quot;), 
                      labels=c(&quot;ITSA4 &lt;= ITUB4&quot;, &quot;ITSA4 &gt; ITUB4&quot;))</code></pre>
 <p><img src="{{< blogdown/postref >}}index.en_files/figure-html/success%20failure%20time%20series-1.png" width="960" /></p>
 <p>The drop on probability seen on previous graph is due to the first observations (end of year 2005 and beginning of 2006), when the pattern studied in this post didn’t work very well.</p>
 <p>At Jun 2021, ITSA4 was being traded at a discount of 24%. And then, are you going to buy, keep or sell?</p>
+<p>Obs.: you can get data set about ITSA4 discounts and codes on my Github repository, clicking (here)[<a href="https://github.com/Sidonesio/ITSA4" class="uri">https://github.com/Sidonesio/ITSA4</a>].</p>
