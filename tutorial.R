@@ -18,6 +18,7 @@ blogdown::new_site(theme = "wowchemy/starter-academic")
 # and refreshes the web page automatically.
 # stop_server() stops the web server
 blogdown::serve_site()
+blogdown::stop_server()
 
 # create a new post
 blogdown::new_post(title = "Hi Hugo",
