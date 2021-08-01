@@ -48,13 +48,13 @@ g &lt;- ggscatter(data = merge, x = &quot;itsa_price&quot;, y = &quot;itub_price
                add.params = list(color = &quot;blue&quot;, fill = &quot;lightgray&quot;), 
                conf.int = TRUE)
 g + 
-  stat_cor(method = &quot;pearson&quot;, label.x = 3, label.y = 30, size = 10) + 
+  stat_cor(method = &quot;pearson&quot;, label.x = 3, label.y = 30, size = 9) + 
   labs(x = &quot;ITSA4&quot;,
        y = &quot;ITUB4&quot;,
        title = &quot;Scatterplot ITSA4 versus ITUB4&quot;) + 
-  theme(axis.text=element_text(size=20),
-        axis.title=element_text(size=20),
-        plot.title = element_text(size=20))</code></pre>
+  theme(axis.text=element_text(size=21),
+        axis.title=element_text(size=21),
+        plot.title = element_text(size=21))</code></pre>
 <p><img src="{{< blogdown/postref >}}index.en_files/figure-html/correlation-1.png" width="960" /></p>
 <p>As you can see, correlatin is equal to 0.99, which means that ITUB4 and ITSA4 mean almost the same thing. As a holding, ITSA4 is traded at a discount in relation to the sum of its investees’ market capitalization. But, how much is the “fair” discount, and can we buy ITSA4 simply to get ITUB4 at lower prices? These are the questions that this post intends to answer.</p>
 <p>Fortunatelly, Itaúsa calculates this discount for us, in a monthly basis (click <a href="https://www.itausa.com.br/ListAtivos.aspx?idCanal=Afrgtrc88Ma15TQHbkasoQ==&amp;linguagem=pt&amp;ano=2021">here</a> to get the data). If you don’t want to or don’t know how to get your hands dirty, I have already done the job, which you can see on the plot below:</p>
@@ -78,9 +78,9 @@ ggplot(data = df, aes(x = date, y = discount)) +
   labs(x = &quot;Date&quot;,
        y = &quot;Discount&quot;,
        title = &quot;Holding&#39;s discount in relation to shares held in investee companies&quot;) + 
-  theme(axis.text=element_text(size=20),
-        axis.title=element_text(size=20),
-        plot.title = element_text(size=20))</code></pre>
+  theme(axis.text=element_text(size=21),
+        axis.title=element_text(size=21),
+        plot.title = element_text(size=21))</code></pre>
 <p><img src="{{< blogdown/postref >}}index.en_files/figure-html/plot%20discount%20time%20series-1.png" width="960" /></p>
 <p>Dashed horizontal lines represent the mean (at the center), mean plus 1 standard deviation (at the top), and mean minus 1 standard deviation (at the bottom). In other words, in most part of the time, this discount ranges between something like 18% and 25%. Another way of visualizing the same information is plotting an histogram:</p>
 <pre class="r"><code># plot distribution
@@ -93,9 +93,9 @@ ggplot(data = df, aes(x = discount)) +
        title = &quot;Discount&#39;s Distribution&quot;) + 
   geom_vline(xintercept = mean(df$discount), 
              linetype = &quot;dashed&quot;, size = 1, color = &quot;red&quot;) + 
-  theme(axis.text=element_text(size=20),
-        axis.title=element_text(size=20),
-        plot.title = element_text(size=20))</code></pre>
+  theme(axis.text=element_text(size=21),
+        axis.title=element_text(size=21),
+        plot.title = element_text(size=21))</code></pre>
 <p><img src="{{< blogdown/postref >}}index.en_files/figure-html/discount%20histogram-1.png" width="960" /></p>
 <p>Red dashed vertical line represents the mean. Distribution is rigth-skewed, which means that in some occasions the discount was too high (more than 30%). Numerically, let’s view the summary stats:</p>
 <pre class="r"><code># summary statistics
@@ -147,9 +147,9 @@ ggplot(data = data,
        title = &quot;Returns comparison&#39;s boxplot&quot;) + 
   theme(legend.position = &quot;none&quot;) + 
   scale_fill_manual(values = c(&quot;red3&quot;,&quot;green4&quot;)) + 
-  theme(axis.text=element_text(size=20),
-        axis.title=element_text(size=20),
-        plot.title = element_text(size=20))</code></pre>
+  theme(axis.text=element_text(size=21),
+        axis.title=element_text(size=21),
+        plot.title = element_text(size=21))</code></pre>
 <p><img src="{{< blogdown/postref >}}index.en_files/figure-html/sucess%20failure%20boxplot-1.png" width="960" /></p>
 <p>A density distribution:</p>
 <pre class="r"><code># density of difference on returns                           
@@ -161,10 +161,10 @@ ggplot(data = data, aes(x = discount, fill = factor(success))) +
        title = &quot;Returns comparison&#39;s distribution&quot;) + 
   theme(legend.position = &quot;bottom&quot;,
         legend.title = element_blank(),
-        legend.text = element_text(size=20),
-        axis.text=element_text(size=20),
-        axis.title=element_text(size=20),
-        plot.title = element_text(size=20)) + 
+        legend.text = element_text(size=21),
+        axis.text=element_text(size=21),
+        axis.title=element_text(size=21),
+        plot.title = element_text(size=21)) + 
   scale_fill_manual(labels = c(&quot;ITSA4 &lt;= ITUB4&quot;, &quot;ITSA4 &gt; ITUB4&quot;),
                     values = c(&quot;red&quot;,&quot;green3&quot;))</code></pre>
 <p><img src="{{< blogdown/postref >}}index.en_files/figure-html/success%20failure%20density-1.png" width="960" /></p>
@@ -182,10 +182,10 @@ data %&gt;%
        y = &quot;Count&quot;,
        title = &quot;Returns comparison&#39;s distribution&quot;) + 
   theme(legend.position = &quot;none&quot;,
-        axis.text=element_text(size=20),
-        axis.title=element_text(size=20),
-        plot.title = element_text(size=20),
-        strip.text = element_text(size = 20)) + 
+        axis.text=element_text(size=21),
+        axis.title=element_text(size=21),
+        plot.title = element_text(size=21),
+        strip.text = element_text(size = 21)) + 
   scale_fill_manual(values=c(&quot;red&quot;, &quot;green3&quot;))</code></pre>
 <p><img src="{{< blogdown/postref >}}index.en_files/figure-html/success%20failure%20histogram-1.png" width="960" /></p>
 <p>On the three plots, we conclude that ITSA4 returns were higher than ITUB4 returns when ITSA4 was traded at a higher discount in relation to the sum of its investees’ market capitalization (which is pretty intuitive). About the third plot, green bars are much higher just because it is more frequent that ITSA4 gets a better return than ITUB4.</p>
@@ -229,10 +229,10 @@ data %&gt;%
         panel.grid.minor.x=element_blank(),
         panel.grid.major.y=element_line(linetype=&quot;dashed&quot;, color=&quot;black&quot;),
         axis.text.x=element_blank(),
-        axis.text.y=element_text(size = 20),
+        axis.text.y=element_text(size = 21),
         axis.ticks.x=element_blank(),
-        axis.title=element_text(size=20),
-        plot.title = element_text(size=20)) + 
+        axis.title=element_text(size=21),
+        plot.title = element_text(size=21)) + 
   labs(x = &quot;Probability&quot;,
        y = &quot;Discount&quot;,
        title = &quot;Probability of ITSA4 &gt; ITUB4 Returns&quot;) + 
@@ -252,13 +252,13 @@ ggplot(data = data, aes(x = date,
   scale_y_continuous(labels = percent_format(accuracy = 1)) + 
   theme(legend.position = &quot;bottom&quot;,
         legend.title = element_blank(),
-        legend.text = element_text(size=20),
-        axis.text=element_text(size=20),
-        axis.title=element_text(size=20),
-        plot.title = element_text(size=20)) +
+        legend.text = element_text(size=21),
+        axis.text=element_text(size=21),
+        axis.title=element_text(size=21),
+        plot.title = element_text(size=21)) +
   scale_color_manual(values=c(&quot;red&quot;, &quot;green3&quot;), 
                      labels=c(&quot;ITSA4 &lt;= ITUB4&quot;, &quot;ITSA4 &gt; ITUB4&quot;))</code></pre>
 <p><img src="{{< blogdown/postref >}}index.en_files/figure-html/success%20failure%20time%20series-1.png" width="960" /></p>
 <p>The drop on probability seen on previous graph is due to the first observations (end of year 2005 and beginning of 2006), when the pattern studied in this post didn’t work very well.</p>
 <p>At Jun 2021, ITSA4 was being traded at a discount of 24%. And then, are you going to buy, keep or sell?</p>
-<p>Obs.: you can get data set about ITSA4 discounts and codes on my Github repository, clicking (here)[<a href="https://github.com/Sidonesio/ITSA4" class="uri">https://github.com/Sidonesio/ITSA4</a>].</p>
+<p>Obs.: you can get data set about ITSA4 discounts and codes on my Github repository, clicking <a href="https://github.com/Sidonesio/ITSA4">here</a>.</p>
