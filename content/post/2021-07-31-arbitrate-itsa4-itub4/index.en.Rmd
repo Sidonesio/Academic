@@ -24,7 +24,7 @@ projects: []
 ---
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(message = FALSE, warning = FALSE)
+knitr::opts_chunk$set(message = FALSE, warning = FALSE, fig.dim = c(10,8))
 ```
 
 Itau Unibanco (ITUB4) and Itaúsa (ITSA4) are two of the most traded shares on Brazilian stock exchange. In fact, Itaúsa is a holding that manages a portfolio of companies such as: Itau Unibanco (ITUB4); Alpargatas (ALPA4); Dexco (DTEX3); Copa Energia; and Nova Transportadora do Sudeste - NTS. Despite that, considering all companies market capitalization, Itau Unibanco comprises almost 90% from Itaúsa's portfolio, such that ITUB4 and ITSA4 are highly correlated, as seen in graph below:
@@ -266,4 +266,4 @@ ggplot(data = data, aes(x = date,
 
 The drop on probability seen on previous graph is due to the first observations (end of year 2005 and beginning of 2006), when the pattern studied in this post didn't work very well.
 
-At Jun 2021, ITSA4 was being traded at a discount of 24%. And then, are you going do buy, keep or sell?
+At Jun 2021, ITSA4 was being traded at a discount of 24%. And then, are you going to buy, keep or sell?
